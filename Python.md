@@ -12,3 +12,4 @@ arr = np.array([np.nan, 1, 2])
 arr = np.array([-np.inf, 5]) 
 # np.nan and np.inf都不能用integer type(dtype=np.int32)
 ```
+
