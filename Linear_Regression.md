@@ -12,8 +12,9 @@ $J(\theta)=\frac{1}{2m}(X\theta-y)^T(X\theta-y)$
 Method of choosing $\theta$ to minimize $J(\theta)$:
 1. LMS Algorithm:
 
-##Feature Scaling(特征缩放:
+## Feature Scaling(特征缩放)
 feature的量纲不同会导致梯度下降的收敛time consuming, 有两种scaling的方式：
+
 ### Standardizaiton(Z-score normalization)
 量化后的特征将服从标准正态分布: $z = \frac{x_i-\mu}{\delta}$
 量化后的特征将分布在[−1,1]区间
@@ -66,7 +67,8 @@ def normalize(X):
            X[:,j] = 0
     return X
 ```
-##Batch gradient descent(批量梯度下降): parametric learning algorithm
+**Parametric Learning Algorithm**
+## Batch gradient descent(批量梯度下降)
 looks at **every** example in the entire training set on every step. 
 $\theta_j = \theta_j-\alpha\frac{\partial}{\partial\theta_j}J(\theta) \quad$, $\alpha$ is the learning rate
 
@@ -79,7 +81,7 @@ $\quad\theta_j = \theta_j+\alpha\frac{1}{m}\sum\limits_{i=1}^{m}(y^{(i)}-h_\thet
 其矩阵表达为：
 $J(\theta)=\frac{1}{2m}(X\theta-y)^T(X\theta-y)$
 
-##Stochastic gradient descent(随机梯度下降
+## Stochastic gradient descent(随机梯度下降)
 also callded incremental gradient descent): **each** time encounter a training example, update the parameters according to the gradient of the error with respect to that single training example only.
 
 Repeat until converge:
@@ -246,7 +248,7 @@ def sgd(rate, maxLoop, epsilon, X, y):
 $\theta ={{\left( {X^{T}}X \right)}^{-1}}{X^{T}}y$
 (数学推导参考Stanford cs229 notes1)
 
-###梯度下降与正规方程的对比: 
+### 梯度下降与正规方程的对比: 
 |梯度下降|正规方程|
 |---|---|
 |Need to choose α|No need to choose α|
@@ -258,7 +260,8 @@ $\theta ={{\left( {X^{T}}X \right)}^{-1}}{X^{T}}y$
 - Delete redundant features
 - Regularization
 
-## Locally weighted linear regression(局部加权线性回归): non-parametric learning algorithm
+**Non-Parametric Learning Algorithm**
+## Locally weighted linear regression(局部加权线性回归)
 在LWR中，我们对一个输入x进行预测时，赋予了x周围点不同的权值，距离x越近，权重越高。整个学习过程中误差将会取决于x周围的误差，而不是整体的误差，这也就是局部一词的由来。
 所谓的非参数学习算法指的是没有明确的参数（比如上述的  θ  取决于当前要预测的  x ），每进行一次预测，就需要重新进行训练。而一般的线性回归属于参数（parametric）学习算法，参数在训练后将不再改变。
 1. 修正$\theta$来最小化$\sum_iw^{(i)}(y_i-\theta^Tx^{(i)})^2$
