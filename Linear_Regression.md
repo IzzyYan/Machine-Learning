@@ -1,0 +1,270 @@
+Hypothesis: 
+$h_\theta(x)=\theta_0+\theta_1x_1+\theta_2x_2+\dots+\theta_nx_n=\theta^Tx$
+
+# 误差评估(Cost Function)
+需要某个手段来评估我们的学习效果，即评估各个真实值$y^{(i)}$与预测值$h_\theta(x^{(i)})$之间的差异。最常见的，我们通过最小均方（Least Mean Square）来描述误差：
+
+$J(\theta)=\frac{1}{2m}\sum\limits_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})^2\quad$, m为样本数
+
+矩阵表达式为：
+$J(\theta)=\frac{1}{2m}(X\theta-y)^T(X\theta-y)$
+
+Method of choosing $\theta$ to minimize $J(\theta)$:
+1. LMS Algorithm:
+
+##Feature Scaling(特征缩放:
+feature的量纲不同会导致梯度下降的收敛time consuming, 有两种scaling的方式：
+### Standardizaiton(Z-score normalization)
+量化后的特征将服从标准正态分布: $z = \frac{x_i-\mu}{\delta}$
+量化后的特征将分布在[−1,1]区间
+### Min-Max Scaling(normalization)
+$z = \frac{x_i-min(x_i)}{max(x_i)-min(x_i)}$
+量化后的特征将分布在[0,1]区间。
+
+大多数机器学习算法中，会选择Standardization来进行特征缩放。但是Min-Max Scaling也会被用于数字图像处理，像素强度通常就会被量化到[0,1]区间，在一般的神经网络算法中，也会要求特征被量化到[0,1]区间。
+进行了特征缩放以后，代价函数的轮廓会是“偏圆”的，梯度下降过程更加笔直，性能因此也得到提升
+
+```python
+def standardize(X):
+    """特征标准化处理
+
+    Args:
+        X: 样本集
+    Returns:
+        标准后的样本集
+    """
+    m, n = X.shape
+    # 归一化每一个特征
+    for j in range(n):
+        features = X[:,j]
+        meanVal = features.mean(axis=0)
+        std = features.std(axis=0)
+        if std != 0:
+            X[:, j] = (features-meanVal)/std
+        else
+            X[:, j] = 0
+    return X
+
+def normalize(X):
+    """特征归一化处理
+
+    Args:
+        X: 样本集
+    Returns:
+        归一化后的样本集
+    """
+    m, n = X.shape
+    # 归一化每一个特征
+    for j in range(n):
+        features = X[:,j]
+        minVal = features.min(axis=0)
+        maxVal = features.max(axis=0)
+        diff = maxVal - minVal
+        if diff != 0:
+           X[:,j] = (features-minVal)/diff
+        else:
+           X[:,j] = 0
+    return X
+```
+##Batch gradient descent(批量梯度下降): parametric learning algorithm
+looks at **every** example in the entire training set on every step. 
+$\theta_j = \theta_j-\alpha\frac{\partial}{\partial\theta_j}J(\theta) \quad$, $\alpha$ is the learning rate
+
+在实际编程中，学习率可以以 3 倍，10 倍这样进行取值尝试，如：
+$\alpha = 0.001,0.003,0.01 \dots 0.3,1$
+
+对于一个样本容量为  m  的训练集，我们定义  θ  的调优过程为：
+Repeat until convergence: 
+$\quad\theta_j = \theta_j+\alpha\frac{1}{m}\sum\limits_{i=1}^{m}(y^{(i)}-h_\theta(x^{(i)}))x_j^{(i)}$
+其矩阵表达为：
+$J(\theta)=\frac{1}{2m}(X\theta-y)^T(X\theta-y)$
+
+##Stochastic gradient descent(随机梯度下降
+also callded incremental gradient descent): **each** time encounter a training example, update the parameters according to the gradient of the error with respect to that single training example only.
+
+Repeat until converge:
+    for i = 1 to m: 
+$\quad \quad \theta_j = \theta_j+\alpha(y^{(i)}-h_\theta(x^{(i)}))x_j^{(i)}$
+
+|Method|Concept|Pros|Cons|
+|---|---|---|---|
+|Batch gradient descent|尽可能减小训练样本的总的预测代价|能够获得最优解，支持并行计算|样本容量较大时，性能显著下降|
+|Stochastic gradient descent|尽可能的减小每个训练样本的预测代价|训练速度快|并不一定能获得全局最优，经常出现抖动和噪音，且不能通过并行计算优化|
+
+随机梯度下降方法以损失很小的一部分精确度和增加一定数量的迭代次数为代价，换取了总体的优化效率的提升。增加的迭代次数远远小于样本的数量。
+
+Python Implementation:
+```python
+import numpy as np
+import matplotlib as plt
+import time
+
+def exeTime(func):
+    """ 耗时计算装饰器
+    """
+    def newFunc(*args, **args2):
+        t0 = time.time()
+        back = func(*args, **args2)
+        return back, time.time() - t0
+    return newFunc
+
+def loadDataSet(filename):
+    """ 读取数据
+
+    从文件中获取数据，在《机器学习实战中》，数据格式如下
+    "feature1 TAB feature2 TAB feature3 TAB label"
+
+    Args:
+        filename: 文件名
+
+    Returns:
+        X: 训练样本集矩阵
+        y: 标签集矩阵
+    """
+    numFeat = len(open(filename).readline().split('\t')) - 1
+    X = []
+    y = []
+    file = open(filename)
+    for line in file.readlines():
+        lineArr = []
+        curLine = line.strip().split('\t')
+        for i in range(numFeat):
+            lineArr.append(float(curLine[i]))
+        X.append(lineArr)
+        y.append(float(curLine[-1]))
+    return np.mat(X), np.mat(y).T
+
+def h(theta, x):
+    """预测函数
+
+    Args:
+        theta: 相关系数矩阵
+        x: 特征向量
+
+    Returns:
+        预测结果
+    """
+    return (theta.T*x)[0,0]
+
+def J(theta, X, y):
+    """代价函数
+
+    Args:
+        theta: 相关系数矩阵
+        X: 样本集矩阵
+        y: 标签集矩阵
+
+    Returns:
+        预测误差（代价）
+    """
+    m = len(X)
+    return (X*theta-y).T*(X*theta-y)/(2*m)
+
+@exeTime
+def bgd(rate, maxLoop, epsilon, X, y):
+    """批量梯度下降法
+
+    Args:
+        rate: 学习率
+        maxLoop: 最大迭代次数
+        epsilon: 收敛精度
+        X: 样本矩阵
+        y: 标签矩阵
+
+    Returns:
+        (theta, errors, thetas), timeConsumed
+    """
+    m,n = X.shape
+    # 初始化theta
+    theta = np.zeros((n,1))
+    count = 0
+    converged = False
+    error = float('inf')
+    errors = []
+    thetas = {}
+    for j in range(n):
+        thetas[j] = [theta[j,0]]
+    while count<=maxLoop:
+        if(converged):
+            break
+        count = count + 1
+        for j in range(n):
+            deriv = (y-X*theta).T*X[:, j]/m
+            theta[j,0] = theta[j,0]+rate*deriv
+            thetas[j].append(theta[j,0])
+        error = J(theta, X, y)
+        errors.append(error[0,0])
+        # 如果已经收敛
+        if(error < epsilon):
+            converged = True
+    return theta,errors,thetas
+
+@exeTime
+def sgd(rate, maxLoop, epsilon, X, y):
+    """随机梯度下降法
+    Args:
+        rate: 学习率
+        maxLoop: 最大迭代次数
+        epsilon: 收敛精度
+        X: 样本矩阵
+        y: 标签矩阵
+    Returns:
+        (theta, error, thetas), timeConsumed
+    """
+    m,n = X.shape
+    # 初始化theta
+    theta = np.zeros((n,1))
+    count = 0
+    converged = False
+    error = float('inf')
+    errors = []
+    thetas = {}
+    for j in range(n):
+        thetas[j] = [theta[j,0]]
+    while count <= maxLoop:
+        if(converged):
+            break
+        count = count + 1
+        errors.append(float('inf'))
+        for i in range(m):
+            if(converged):
+                break
+            diff = y[i,0]-h(theta, X[i].T)
+            for j in range(n):
+                theta[j,0] = theta[j,0] + rate*diff*X[i, j]
+                thetas[j].append(theta[j,0])
+            error = J(theta, X, y)
+            errors[-1] = error[0,0]
+            # 如果已经收敛
+            if(error < epsilon):
+                converged = True
+    return theta, errors, thetas
+```
+[Gradient Descent Test code](URL 'https://yoyoyohamapi.gitbooks.io/mit-ml/content/%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/codes/%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D.html')
+
+2. Normal equations(正规方程): 规避了$\alpha$的调节来求得$J(θ)$的最小值
+$\theta ={{\left( {X^{T}}X \right)}^{-1}}{X^{T}}y$
+(数学推导参考Stanford cs229 notes1)
+
+###梯度下降与正规方程的对比: 
+|梯度下降|正规方程|
+|---|---|
+|Need to choose α|No need to choose α|
+|Needs many iterations|Don’t need to iterate|
+|Works well even when is large, time complexity$O(kn^2)$|Need to compute ${\left( {X^{T}}X \right)}^{-1}$, time complexity$O(n^3)$, 如果特征维度太高（特别是超过 10000维)，那么不宜再考虑该方法|
+|能应用到一些更加复杂的算法中，如逻辑回归(Logic Regression)等|${\left( {X^{T}}X \right)}^{-1}$需要可逆，并且只能用在LR中|
+
+如果${\left( {X^{T}}X \right)}^{-1}$不可逆，可以通过以下方法解决：
+- Delete redundant features
+- Regularization
+
+## Locally weighted linear regression(局部加权线性回归): non-parametric learning algorithm
+在LWR中，我们对一个输入x进行预测时，赋予了x周围点不同的权值，距离x越近，权重越高。整个学习过程中误差将会取决于x周围的误差，而不是整体的误差，这也就是局部一词的由来。
+所谓的非参数学习算法指的是没有明确的参数（比如上述的  θ  取决于当前要预测的  x ），每进行一次预测，就需要重新进行训练。而一般的线性回归属于参数（parametric）学习算法，参数在训练后将不再改变。
+1. 修正$\theta$来最小化$\sum_iw^{(i)}(y_i-\theta^Tx^{(i)})^2$
+2. 进行预测$\theta^Tx$
+
+通常，$w^{(i)}$服从高斯分布，在x周围呈指数型衰减: $w^{(i)} = e^{-\frac{(x^{(i)}-x)^2}{2\tau^2}}$
+其中，$\tau$值越小，则靠近预测点的权重越大，而远离预测点的权重越小。
+
+程序示例：[LWR code](URL 'https://yoyoyohamapi.gitbooks.io/mit-ml/content/%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/codes/%E5%B1%80%E9%83%A8%E5%8A%A0%E6%9D%83%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92.html')
