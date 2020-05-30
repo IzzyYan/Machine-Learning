@@ -267,7 +267,8 @@ $\theta ={{\left( {X^{T}}X \right)}^{-1}}{X^{T}}y$
 1. 修正$\theta$来最小化$\sum_iw^{(i)}(y_i-\theta^Tx^{(i)})^2$
 2. 进行预测$\theta^Tx$
 
-通常，$w^{(i)}$服从高斯分布，在x周围呈指数型衰减: $w^{(i)} = e^{-\frac{(x^{(i)}-x)^2}{2\tau^2}}$
-其中，$\tau$值越小，则靠近预测点的权重越大，而远离预测点的权重越小。
+通常，$w^{(i)}$服从高斯分布，在x周围呈指数型衰减: $w^{(i)} = e^{-\frac{(x^{(i)}-x)^2}{2\tau^2}}$, $w$为权重
+其中，$\tau$值(bandwidth带宽参数)越小，则靠近预测点的权重越大，而远离预测点的权重越小。
 
 程序示例：[LWR code](URL 'https://yoyoyohamapi.gitbooks.io/mit-ml/content/%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/codes/%E5%B1%80%E9%83%A8%E5%8A%A0%E6%9D%83%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92.html')
+不同$\tau$值的拟合程度: [LWR案例](URL 'https://github.com/apachecn/AiLearning/blob/master/docs/ml/8.%E5%9B%9E%E5%BD%92.md')

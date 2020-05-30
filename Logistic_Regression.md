@@ -31,3 +31,5 @@ ${x_1^2}$+${x_2^2}$ $\geq$ 1
 How to choose $\theta$
 $J\left( \theta \right)=\frac{1}{m}\sum\limits_{i=1}^{m}{{Cost}\left( {h_\theta}\left( {x}^{\left( i \right)} \right),{y}^{\left( i \right)} \right)}$
 
+# Newton’s method(牛顿法)
+
