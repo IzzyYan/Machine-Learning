@@ -15,21 +15,76 @@ def sigmoid(z):
     
     return 1 / (1 + np.exp(-z))
 ```
-## Decision Boundary(判定边界)
-${h_\theta}\left(x\right) = g\left({\theta_0}+{\theta_1}{x_1}+{\theta_2}{x_2}\right)$
+## Decision Boundary(决策边界)
+“决策边界是预测函数$h_\theta(x)$的属性，而不是训练集属性”，这是因为能作出“划清"类间界限的只有$h_\theta(x)$，而训练集只是用来训练和调节参数的。
+* Linear Decision Boundary：${h_\theta}\left(x\right) = g\left({\theta_0}+{\theta_1}{x_1}+{\theta_2}{x_2}\right)$
 
-并且参数$\theta$ 是向量[-3 1 1]。 则当$-3+{x_1}+{x_2} \geq 0$，即${x_1}+{x_2} \geq 3$时，模型将预测 $y=1$。 我们可以绘制直线${x_1}+{x_2} = 3$，这条线便是我们模型的分界线，将预测为1的区域和预测为 0的区域分隔开。
+参数$\theta$ 是向量[-3 1 1]。 则当$-3+{x_1}+{x_2} \geq 0$，即${x_1}+{x_2} \geq 3$时，模型将预测 $y=1$。 我们可以绘制直线${x_1}+{x_2} = 3$，这条线便是我们模型的分界线，将预测为1的区域和预测为 0的区域分隔开。
 
-##Non-linear Decision Boundary
-${h_\theta}\left( x \right)=g\left( {\theta_0}+{\theta_1}{x_1}+{\theta_{2}}{x_{2}}+{\theta_{3}}x_{1}^{2}+{\theta_{4}}x_{2}^{2} \right)$
-If $\theta$ equals [-1 0 0 1 1] 
-predict "y=1" if -1+${x_1^2}$+${x_2^2}$ $\geq$ 0
-${x_1^2}$+${x_2^2}$ $\geq$ 1
-*Decision is the property of hypothesis, not the dataset*
+* Non-linear Decision Boundary：${h_\theta}\left( x \right)=g\left( {\theta_0}+{\theta_1}{x_1}+{\theta_{2}}{x_{2}}+{\theta_{3}}x_{1}^{2}+{\theta_{4}}x_{2}^{2} \right)$
 
-##Cost Function
-How to choose $\theta$
+参数$\theta$是向量[-1 0 0 1 1], predict "y=1" if -1+${x_1^2}$+${x_2^2}$ $\geq$ 0, ${x_1^2}$+${x_2^2}$ $\geq$ 1
+
+## Cost Function
+逻辑回归定义的代价函数为：
 $J\left( \theta \right)=\frac{1}{m}\sum\limits_{i=1}^{m}{{Cost}\left( {h_\theta}\left( {x}^{\left( i \right)} \right),{y}^{\left( i \right)} \right)}$
 
-# Newton’s method(牛顿法)
+为保证代价函数呈凸形曲线，则定义$Cost(h_\theta(x^{(i)}),y^{(i)})$: 
+$Cost(h_\theta(x),y)=
+\begin{cases}
+-log(h_\theta(x)),  if y = 1\\
+-log(1-h_\theta(x)), if y = 0
+\end{cases}$
+
+该函数等价于：
+Cost(h(x),y) = -ylog(h(x))-(1-y)log(1-h(x)) = (log(g(X$\theta$))^T * y+(log(1-g(X$\theta$))^T * (1-y)))
+
+### 最小化Cost Function: 
+* Batch Gradient Descent:
+Repeat until converge:
+  &nbsp; for i = 1 to m:
+  &nbsp; &nbsp; for j = 1 to n: 
+  &nbsp; &nbsp; &nbsp; $\theta_j = \theta_j+\frac{1}{m}\sum_{i=1}^m(y_i-h_\theta(x^{(i)}))x_j^{(i)}$
+通过矩阵型表示: 
+Repeat until converge:
+$\quad \theta = \theta+\alpha*\frac{1}{m} X^T(y-g(X\theta))$
+* Stochastic Gradient Descent:
+Repeat until converge: 
+&nbsp; for i = 1 to m: 
+$\quad \theta = \theta+\alpha*(y_i-h_\theta(x^{(i)}))x_j^{(i)}$
+
+## Regularization(正则化)
+对系数$\theta_i$penalize
+* 线性回归中的正则化：
+  $J(\theta) = \frac{1}{2m}\sum\limits_{i=1}^m(h_\theta(x^{(i)})-y^{(i)})^2+\lambda\sum\limits_{i=1}^{n}\theta_j^2$ 
+&nbsp; = $\frac{1}{2m}(X\theta-y)^T(X\theta-y)+\lambda\sum\limits_{i=1}^{n}\theta_j^2$
+λ越大，要使J(θ)变小，惩罚力度就要变大，这样θ会被惩罚得越惨（越小）。即要避免过拟合, 我们显然应当增大λ的值。
+
+梯度下降也发生相应变化：
+Repeat:{
+$\theta_j =\theta_j-\alpha\big(\frac{1}{m}\sum\limits_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}+\frac{\lambda}{m}\theta_j\big)$
+}
+等价于：
+$\theta_j=\theta_j(1-\alpha\frac{\lambda}{m})-\alpha\frac{1}{m}\sum\limits_{i=1}^{m}[h_\theta(x^{(i)})-y^{(i)}]x_j^{(i)}$
+由于$1-\alpha\frac{\lambda}{m}\lt1$，故而梯度下降中每次更$\theta$，同时也会去减小$\theta$值，达到了Regularization的目的。
+
+如果使用Normal Equation，则使$J(\theta)$最小化的$\theta$值为：
+$\theta=(X^TX+\lambda\left[\begin{array}{ccccc}0 &\cdots &\cdots &\cdots &0 \\ 0 &1 &\cdots &\cdots &0\\ \vdots & \vdots & 1 &\cdots & 0\\ \vdots &\vdots &\cdots &\ddots & \vdots \\ 0 & 0 &\cdots &\cdots &1 \end{array}\right])^{-1}X^Ty$
+
+* 逻辑回归中的正则化：
+$J(\theta) =\frac{1}{m}\sum\limits_{i=1}^{m}y^{(i)}logh_0(x^{(i)})+(1-y^{(i)})log(1-h_\theta(x^{(i)}))+\frac{\lambda}{2m}\sum\limits_{j=1}^{n}\theta_j^2$
+= $\frac{1}{m}\big((\,log\,(g(X\theta))^Ty+(\,log\,(1-g(X\theta))^T(1-y)\big) + \frac{\lambda}{2m}\sum_{j=1}^{n}\theta_{j}^{2}$
+
+梯度下降：
+$\theta_j =\theta_j-\alpha\big(\frac{1}{m}\sum\limits_{i=1}^{m}(h_\theta(x^{(i)})-y^{(i)})x_j^{(i)}+\frac{\lambda}{m}\theta_j\big)$
+即：
+$\theta = \theta - \alpha*(\frac{1}{m} X^T(y-g(X\theta)) + \frac{\lambda}{m}\theta_{j}) \quad j \neq 0$
+
+程序示例：[线性决策边界](URL 'https://yoyoyohamapi.gitbooks.io/mit-ml/content/%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92/codes/%E7%BA%BF%E6%80%A7%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C.html'), [非线性决策边界](URL 'https://yoyoyohamapi.gitbooks.io/mit-ml/content/%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92/codes/%E9%9D%9E%E7%BA%BF%E6%80%A7%E5%86%B3%E7%AD%96%E8%BE%B9%E7%95%8C.html')
+
+## Mul&-class classifica&on: One-vs-all(多分类问题)
+1. 轮流选中某一类型$i$，将其视为正样本，即“1”分类，剩下样本都看做是负样本，即“0”分类。
+2. 训练逻辑回归模型得到参数$\theta^{(1)}, \theta^{(2)}, ..., \theta^{(K)}$，即总共获得了$K−1$个决策边界。
+
+## Newton’s method(牛顿法)
 
