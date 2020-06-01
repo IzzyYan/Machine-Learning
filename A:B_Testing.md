@@ -50,10 +50,49 @@ According to our specific example, what kind of question we could ask:
 	* Which countries?
 	* If we expose this feature to certain videos only. How do you know who have seen it?
 
+	### Choose cohort as population
+	* Let's define "cohort": tract the same group of users over time. 
+    	* Track Population: 
+        	* Who ever joined: quick, on the spot.
+      	* Track Cohort: sample group of users with learning effects
+        	* Retention
+        	* Adoption of a new feature(novelty effect)
+        	* Run longer: dosage over time. e.g. "wanna watch?"
 	### Determine sample size
-
+	* Standard Error ~ 1/sqrt(n)
+	* Large sample size, always better
+	* But running a large sample size has some drawbacks
+    	* Max allowable size: 50%
+    	* Save space, growth hacking, rapid develop
+  	* So, we want the smallest possible experiment size to achieve maximum. 
 	### Sampling method
-
-	### Duration vs. Exposure
-
+	* Simple
+    	* Every user has equal chance of likelihood of being selected
+    	* Stratified
+        	* Problem: only 1% of our users are high spenders
+        	* Strata: low/medium/high spender
+        	* Ensures that an equal representation from each strata
+	### Experiment Duration
+	* Duration vs. Exposure
+    	* Duration: # of days you want it to run
+    	* Exposure: % of users who see this experiment on a day
+    	* Duration * Exposure: N
+    	* Duration and exposure are trade-offs.
+    	* Exercise: why not load everything on the same day?
+  			(1. Reduce seasonality; 2. Reduce risk)
+	
 	## Interpret Restuls
+	**This is where you make recommendation so it is important!**
+	* Briefly describe how to calculate hypothesis testing
+    	* (Almost always)Two sample t-tests
+    	* Calculate t-score
+    	* State your decision criteria
+	
+	## Make Recommendation
+	* Not statistic significant?
+    	* What have we learned?
+  	* Statistic significant?
+    	* Good, but talk about trade-offs
+    	* Benefit: small impact
+    	* Cost: hard to implement
+    	* Opportunity cost:(Prioritization)
